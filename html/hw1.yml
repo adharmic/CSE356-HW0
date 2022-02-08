@@ -1,0 +1,41 @@
+---
+- hosts: all
+  tasks:
+    - name: Clone hw0
+      git:
+        repo: https://github.com/adithyajith925/CSE356-HW0.git
+        dest: /hw1/
+        clone: yes
+        update: yes
+      become: yes
+    - name: ensure nginx is at the latest version
+      apt: name=nginx state=latest
+      become: yes
+    - name: start nginx
+      service:
+          name: nginx
+          state: started
+      become: yes
+    - name: copy the nginx config file and restart nginx
+      copy: 
+        remote_src: yes
+        src: /hw1/hw0.cfg
+        dest: /etc/nginx/sites-available/hw0.cfg
+      become: yes
+    - name: create symlink
+      file:
+        src: /etc/nginx/sites-available/hw0.cfg
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+      become: yes
+    - name: Allow all access to tcp port 80
+      ufw:
+        rule: allow
+        port: '80'
+        proto: tcp
+      become: yes
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+      become: yes
